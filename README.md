@@ -1,140 +1,149 @@
-# Diabetic Retinopathy Classification
+# Diabetic Retinopathy Detection
 
-A deep learning project for automated detection of diabetic retinopathy from retinal images using PyTorch. This model classifies retinal images into binary categories: presence or absence of diabetic retinopathy.
+A deep learning project for detecting and classifying diabetic retinopathy using PyTorch. The project implements both multiclass (5-class) and binary classification approaches using various CNN architectures.
 
-## Overview
+## Project Overview
 
-This project implements a custom CNN architecture to analyze retinal images for signs of diabetic retinopathy. It includes data preprocessing, model training, hyperparameter tuning, and evaluation metrics.
+This project aims to detect diabetic retinopathy from retinal images using different CNN architectures:
+- Custom CNN
+- AlexNet
+- VGG
 
-## Dependencies
+The implementation includes both multiclass classification (No_DR, Mild, Moderate, Severe, Proliferate_DR) and binary classification (No_DR vs DR) approaches.
+
+## Requirements
 
 - Python 3.x
 - PyTorch
 - torchvision
-- kagglehub
 - pandas
 - numpy
 - scikit-learn
 - PIL (Python Imaging Library)
 - matplotlib
 - seaborn
+- tqdm
 
-## Dataset
+## Dataset Structure
 
-The project uses the Diabetic Retinopathy dataset from Kaggle, specifically the preprocessed version with 224x224 Gaussian filtered images. The dataset includes:
-- Multiple classes of DR severity (No_DR, Mild, Moderate, Severe, Proliferate_DR)
-- Images are preprocessed and stored in class-specific folders
-- Binary classification: No_DR (0) vs DR (1)
+The dataset should be organized as follows:
+```
+root_path/
+│
+├── train.csv
+└── gaussian_filtered_images/
+    └── gaussian_filtered_images/
+        ├── No_DR/
+        ├── Mild/
+        ├── Moderate/
+        ├── Severe/
+        └── Proliferate_DR/
+```
 
-## Project Structure
+## Features
 
-1. **Data Preparation**
-   - Downloads dataset using kagglehub
-   - Implements custom Dataset class
-   - Splits data into train/validation/test sets
-   - Applies image transformations
+### Multiclass Classification
+- Implementation of three CNN architectures:
+  - Custom CNN
+  - AlexNet
+  - VGG
+- Data augmentation techniques
+- Training with metrics tracking
+- Confusion matrix visualization
+- Performance evaluation using accuracy, precision, recall, and F1-score
 
-2. **Model Architecture**
-   - Custom CNN with three convolutional layers
-   - Batch normalization
-   - MaxPooling
-   - Dropout for regularization
-   - Fully connected layers
+### Binary Classification
+- Custom CNN implementation
+- Hyperparameter tuning
+- Model evaluation
+- Prediction visualization
+- Confusion matrix analysis
 
-3. **Training Pipeline**
-   - Cross-entropy loss
-   - Adam optimizer
-   - Learning rate scheduling
-   - Validation metrics tracking
+## Model Architectures
 
-4. **Evaluation Metrics**
-   - Accuracy
-   - Precision
-   - Recall
-   - F1 Score
-   - Confusion Matrix
+### Custom CNN
+```python
+- Input Layer (224x224x3)
+- Conv2D + ReLU + MaxPool2D + BatchNorm
+- Conv2D + ReLU + MaxPool2D + BatchNorm
+- Conv2D + ReLU + MaxPool2D + BatchNorm
+- Fully Connected Layers
+- Output Layer (5 classes for multiclass, 2 for binary)
+```
 
-5. **Hyperparameter Tuning**
-   - Grid search over:
-     - Learning rates: [1e-4, 1e-3]
-     - Batch sizes: [32, 64]
-     - Number of epochs: [10, 15]
-     - Dropout rates: [0.1, 0.2]
+### AlexNet
+- Modified AlexNet architecture with:
+  - 5 convolutional layers
+  - 3 fully connected layers
+  - Dropout for regularization
+  - BatchNorm for better training stability
 
-## Usage
+### VGG
+- Modified VGG architecture with:
+  - 13 convolutional layers
+  - 3 fully connected layers
+  - Extensive use of 3x3 convolutions
+  - MaxPooling layers
 
-1. **Setup Environment**
-   ```bash
-   pip install torch torchvision kagglehub pandas numpy scikit-learn pillow matplotlib seaborn
-   ```
+## Training
 
-2. **Download Dataset**
-   ```python
-   import kagglehub
-   dataset_path = kagglehub.dataset_download('sovitrath/diabetic-retinopathy-224x224-gaussian-filtered')
-   ```
+### Multiclass Training
+```python
+python train_multiclass.py --model [custom|alexnet|vgg] --epochs 10 --batch_size 64
+```
 
-3. **Train Model**
-   ```python
-   # Run training with default parameters
-   model = CustomCNN(dropout_rate=0.15)
-   train_model(model, train_loader, val_loader)
-   
-   # Or run hyperparameter tuning
-   train_final_model(best_params)
-   ```
+### Binary Training
+```python
+python train_binary.py --epochs 10 --batch_size 64
+```
 
-4. **Save/Load Model**
-   ```python
-   # Save model
-   torch.save(model.state_dict(), 'diabetic_retinopathy_model.pth')
-   
-   # Load model
-   model = CustomCNN(dropout_rate=0.15)
-   model.load_state_dict(torch.load('diabetic_retinopathy_model.pth'))
-   ```
+## Model Performance
 
-## Performance
-
-The model's performance metrics include:
+The models are evaluated using:
 - Accuracy
 - Precision
 - Recall
-- F1 Score
+- F1-score
+- Confusion Matrix
 
-Actual values will vary based on hyperparameter tuning results.
+## Hyperparameter Tuning
+
+The binary classification model includes hyperparameter tuning for:
+- Learning rates: [1e-4, 1e-3]
+- Batch sizes: [32, 64]
+- Number of epochs: [10, 15]
+- Dropout rates: [0.1, 0.2]
+
+## Data Preprocessing
+
+- Image resizing to 224x224
+- Normalization
+- Data augmentation (for multiclass):
+  - Random horizontal flip
+  - Random rotation
+  - Color jitter
+
+## Model Saving and Loading
+
+The final trained model is saved as 'diabetic_retinopathy_model.pth'.
+
+To load the model:
+```python
+model = CustomCNN(dropout_rate)
+model.load_state_dict(torch.load('diabetic_retinopathy_model.pth'))
+```
 
 ## Visualization
 
 The project includes visualization tools for:
-- Confusion matrix
-- Sample predictions
-- Training metrics over time
-
-## Model Architecture Details
-
-```
-CustomCNN(
-  Input (3 channels) -> Conv2D (8 filters) -> ReLU -> BatchNorm -> MaxPool
-  -> Conv2D (16 filters) -> ReLU -> BatchNorm -> MaxPool
-  -> Conv2D (32 filters) -> ReLU -> BatchNorm -> MaxPool
-  -> Flatten -> Dense (32) -> Dropout -> Dense (2)
-)
-```
-
-## License
-
-Please check the original dataset license terms on Kaggle.
-
-## Future Improvements
-
-- Implement data augmentation
-- Try transfer learning with pre-trained models
-- Add cross-validation
-- Experiment with different architectures
-- Implement gradient clipping
-- Add early stopping
+- Training and validation loss curves
+- Confusion matrices
+- Sample predictions on test images
 
 ## Contributing
 
 Feel free to submit issues and enhancement requests!
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
